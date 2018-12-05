@@ -1,5 +1,26 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
+Parameters:
+    Zone:
+        Type: String
+        MinLength: 1
+
+    Domain:
+        Type: String
+        MinLength: 1
+
+    CertificateARN:
+        Type: String
+        MinLength: 1
+
+    CertificateValidationDomain:
+        Type: String
+        MinLength: 1
+
+    CertificateValidationValue:
+        Type: String
+        MinLength: 1
+
 Resources:
 
     Redirectinator:
@@ -26,10 +47,24 @@ Resources:
             AssumeRolePolicyDocument:
                 Version: 2012-10-17
                 Statement:
-                    -   Effect: Allow
-                        Principal:
-                            Service:
-                                - edgelambda.amazonaws.com
-                                - lambda.amazonaws.com
-                        Action:
-                            - sts:AssumeRole
+                  - Effect: Allow
+                    Principal:
+                        Service:
+                          - edgelambda.amazonaws.com
+                          - lambda.amazonaws.com
+                    Action:
+                        - sts:AssumeRole
+
+    DNS:
+        Type: AWS::Route53::RecordSetGroup
+        Properties:
+            Comment: Supporting resource records
+            HostedZoneName: !Sub ${Zone}.
+            RecordSets:
+              - Name: !Ref CertificateValidationDomain
+                Type: CNAME
+                TTL: 300
+                ResourceRecords:
+                  - !Ref CertificateValidationValue
+
+
