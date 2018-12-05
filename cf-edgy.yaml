@@ -2,4 +2,34 @@ AWSTemplateFormatVersion: '2010-09-09'
 
 Resources:
 
+    Redirectinator:
+        Type: AWS::Lambda::Function
+        Properties:
+            Description: Redirect at the edge
+            Code:
+                ZipFile: !Sub |
+                    'use strict';
+                    const where = 'https://gregwiley.com';
+                    exports.handler = (evt, ctx, cb) => {
+                    var req = evt.Records[0].cf.request;
+                    req.uri = where;
+                    return cb (null, req);
+                    };
+            Handler: index.handler
+            MemorySize: 128
+            Role: !GetAtt RedirectinatorExecRole.Arn
+            Runtime: nodejs6.10
 
+    RedirectinatorExecRole:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: 2012-10-17
+                Statement:
+                    -   Effect: Allow
+                        Principal:
+                            Service:
+                                - edgelambda.amazonaws.com
+                                - lambda.amazonaws.com
+                        Action:
+                            - sts:AssumeRole
