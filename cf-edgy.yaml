@@ -31,17 +31,25 @@ Resources:
                 ZipFile: !Sub |
                     'use strict';
                     const where = 'https://gregwiley.com';
+                    const response = {
+                        status: '302',
+                        statusDescription: 'Found',
+                        headers: {
+                            location: [{
+                                key: 'Location',
+                                value: where
+                            }],
+                        }
+                    };
                     exports.handler = (evt, ctx, cb) => {
-                    var req = evt.Records[0].cf.request;
-                    req.uri = where;
-                    return cb (null, req);
+                      cb(null, req)
                     };
             Handler: index.handler
             MemorySize: 128
             Role: !GetAtt RedirectinatorExecRole.Arn
             Runtime: nodejs6.10
 
-    RedirectinatorVersion:
+    RedirectinatorVersion2:
         Type: AWS::Lambda::Version
         Properties:
             FunctionName: !Ref Redirectinator
@@ -60,6 +68,7 @@ Resources:
                     Action:
                         - sts:AssumeRole
 
+
     Edge:
         Type: AWS::CloudFront::Distribution
         Properties:
@@ -75,7 +84,7 @@ Resources:
                     ViewerProtocolPolicy: redirect-to-https
                     LambdaFunctionAssociations:
                       - EventType: viewer-request
-                        LambdaFunctionARN: !Ref RedirectinatorVersion
+                        LambdaFunctionARN: !Ref RedirectinatorVersion2
                 Enabled: true
                 HttpVersion: http2
                 Origins:
