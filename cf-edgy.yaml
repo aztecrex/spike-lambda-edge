@@ -42,7 +42,8 @@ Resources:
                         }
                     };
                     exports.handler = (evt, ctx, cb) => {
-                      cb(null, resp)
+                      console.log(JSON.stringify(evt));
+                      cb(null, resp);
                     };
             Handler: index.handler
             MemorySize: 128
@@ -67,6 +68,16 @@ Resources:
                           - lambda.amazonaws.com
                     Action:
                         - sts:AssumeRole
+            Policies:
+              - PolicyName: writeLogs
+                PolicyDocument:
+                  Version: 2012-10-17
+                  Statement:
+                    Effect: Allow
+                    Action:
+                      - logs:*
+                    Resource:
+                      - "*"
 
 
     Edge:
@@ -81,7 +92,7 @@ Resources:
                     ForwardedValues:
                         QueryString: false
                     TargetOriginId: redirectinator
-                    ViewerProtocolPolicy: redirect-to-https
+                    ViewerProtocolPolicy: allow-all
                     LambdaFunctionAssociations:
                       - EventType: viewer-request
                         LambdaFunctionARN: !Ref RedirectinatorVersion3
